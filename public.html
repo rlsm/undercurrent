@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undercurrent — The signal beneath the scene</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Montserrat:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0A0A0A; --black-warm: #161310; --card: #1C1812;
+    --cream: #F5F1E8; --cream-dim: #C9C2B0; --gold: #C9A961;
+    --gold-dim: #8A7548; --grey: #6B6557; --line: #2A251D;
+    --green: #7A9B6E;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black); color: var(--cream);
+    font-family: 'Montserrat', sans-serif; font-weight: 300;
+    overflow-x: hidden; -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+  }
+  h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; line-height: 1.05; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.6rem 5vw;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.95), rgba(10,10,10,0));
+  }
+  .logo { font-family: 'Playfair Display', serif; font-weight: 600; font-style: italic; font-size: 1.3rem; }
+  .logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 2.4rem; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+  .nav-links a { opacity: 0.7; transition: opacity 0.25s; }
+  .nav-links a:hover { opacity: 1; color: var(--gold); }
+  .nav-cta {
+    border: 1px solid var(--gold-dim); padding: 0.55rem 1.3rem; font-size: 0.75rem;
+    letter-spacing: 0.08em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.25s; cursor: pointer; background: none; color: var(--cream);
+  }
+  .nav-cta:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+  .hero { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; padding: 7rem 5vw 3rem; position: relative; }
+  .hero-content { max-width: 920px; z-index: 2; }
+  .hero .eyebrow { margin-bottom: 1.6rem; display: block; }
+  .hero h1 { font-size: clamp(2.4rem, 6.5vw, 5.4rem); color: var(--cream); margin-bottom: 1.6rem; }
+  .hero h1 em { font-style: italic; color: var(--gold); }
+  .hero-sub { font-size: 1rem; color: var(--cream-dim); max-width: 540px; line-height: 1.7; margin-bottom: 2.4rem; }
+  .hero-sub strong { color: var(--cream); font-weight: 500; }
+
+  .waveform { width: 100%; height: 50px; display: flex; align-items: center; gap: 3px; overflow: hidden; }
+  .waveform span { flex: 1; background: var(--gold-dim); min-width: 2px; opacity: 0.5; }
+
+  .signup-form { display: flex; max-width: 460px; border-bottom: 1px solid var(--gold-dim); padding-bottom: 0.2rem; }
+  .signup-form input {
+    flex: 1; background: transparent; border: none; color: var(--cream);
+    font-family: 'Montserrat', sans-serif; font-size: 0.95rem; padding: 0.7rem 0.2rem; outline: none;
+  }
+  .signup-form input::placeholder { color: var(--grey); }
+  .signup-form button {
+    background: none; border: none; color: var(--gold); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; padding: 0.7rem 0.5rem;
+  }
+  .form-note { font-size: 0.72rem; color: var(--grey); margin-top: 0.9rem; font-family: 'JetBrains Mono', monospace; }
+  .form-status { font-size: 0.78rem; margin-top: 0.7rem; font-family: 'JetBrains Mono', monospace; min-height: 1.2em; }
+  .form-status.ok { color: var(--green); }
+
+  section { padding: 5rem 5vw; }
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem; }
+  .section-head h2 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); color: var(--cream); }
+  .section-num { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--grey); }
+
+  /* Event listings */
+  .events-list { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .event-row {
+    background: var(--black); padding: 1.8rem 2rem; display: grid;
+    grid-template-columns: 110px 1fr auto; gap: 1.8rem; align-items: center;
+  }
+  .event-date { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--gold); }
+  .event-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.2rem; margin-bottom: 0.4rem; }
+  .event-meta { font-size: 0.82rem; color: var(--grey); margin-bottom: 0.7rem; }
+  .event-summary { font-size: 0.88rem; color: var(--cream-dim); line-height: 1.6; max-width: 560px; }
+  .event-link {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold-dim);
+    padding: 0.6rem 1.1rem; white-space: nowrap; transition: all 0.2s;
+  }
+  .event-link:hover { background: var(--gold); color: var(--black); }
+  .empty-state { color: var(--grey); font-size: 0.92rem; padding: 2rem 0; font-style: italic; }
+
+  @media (max-width: 760px) {
+    .event-row { grid-template-columns: 1fr; gap: 0.8rem; }
+    .event-link { width: fit-content; }
+    .nav-links { display: none; }
+  }
+
+  footer {
+    padding: 3.5rem 5vw 2.5rem; display: flex; justify-content: space-between;
+    align-items: flex-end; flex-wrap: wrap; gap: 2rem; border-top: 1px solid var(--line);
+  }
+  .footer-left .logo { display: block; margin-bottom: 0.6rem; }
+  .footer-left p { color: var(--grey); font-size: 0.82rem; max-width: 320px; line-height: 1.6; }
+  .footer-links { display: flex; gap: 2.2rem; }
+  .footer-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--grey); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Under<span>current</span></div>
+  <div class="nav-links">
+    <a href="#events">This Week</a>
+    <a href="#join">Membership</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('join').scrollIntoView()">Join</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <span class="eyebrow">NJ / NY — Live listings below</span>
+    <h1>What's worth<br>your night, <em>before</em><br>everyone else knows.</h1>
+    <p class="hero-sub">Every event below was reviewed by a human before it went up. <strong>No noise. No flyers. Just the signal.</strong></p>
+  </div>
+</section>
+
+<div class="waveform" id="wave1"></div>
+
+<section id="events">
+  <div class="section-head">
+    <h2>On the radar</h2>
+    <span class="section-num mono">{{ events|length }} APPROVED</span>
+  </div>
+
+  <div class="events-list">
+    {% if events|length == 0 %}
+      <div class="empty-state">Nothing live yet — check back soon, or join below to get it by email the moment it drops.</div>
+    {% endif %}
+    {% for ev in events %}
+    <div class="event-row">
+      <div class="event-date mono">{{ ev.event_date }}</div>
+      <div>
+        <div class="event-title">{{ ev.title }}</div>
+        <div class="event-meta mono">{{ ev.venue }} — {{ ev.city }}</div>
+        <div class="event-summary">{{ ev.ai_summary or ev.raw_description }}</div>
+      </div>
+      <a href="{{ ev.ticket_url }}" class="event-link" target="_blank" rel="noopener">Details →</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="waveform" id="wave2"></div>
+
+<section id="join">
+  <div class="section-head">
+    <h2>Get it before it's gone</h2>
+    <span class="section-num mono">FREE OR $5/MO</span>
+  </div>
+  <form class="signup-form" onsubmit="handleSubscribe(event)">
+    <input type="email" id="email-input" placeholder="your@email.com" required>
+    <button type="submit">Get the signal →</button>
+  </form>
+  <p class="form-status" id="form-status"></p>
+  <p class="form-note">Free to join. No spam. Unsubscribe in one tap. Every subscriber gets one entry to the monthly draw — no purchase necessary.</p>
+</section>
+
+<footer>
+  <div class="footer-left">
+    <div class="logo">Under<span>current</span></div>
+    <p>The signal beneath the scene. NJ/NY first, nationwide next.</p>
+  </div>
+  <div class="footer-links">
+    <a href="#">Instagram</a>
+    <a href="#">Discord</a>
+    <a href="#">Rules</a>
+  </div>
+</footer>
+
+<script>
+  function buildWave(el, dense) {
+    const count = dense ? 140 : 90;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      const h = 8 + Math.abs(Math.sin(i * 0.4)) * 40 + Math.random() * 14;
+      html += `<span style="height:${h}%"></span>`;
+    }
+    el.innerHTML = html;
+  }
+  buildWave(document.getElementById('wave1'));
+  buildWave(document.getElementById('wave2'), true);
+
+  async function handleSubscribe(e) {
+    e.preventDefault();
+    const email = document.getElementById('email-input').value;
+    const status = document.getElementById('form-status');
+    status.textContent = 'Submitting...';
+    status.className = 'form-status';
+
+    try {
+      const res = await fetch('/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `email=${encodeURIComponent(email)}&tier=free`
+      });
+      const data = await res.json();
+      status.textContent = data.message || data.error;
+      status.className = data.ok ? 'form-status ok' : 'form-status';
+      if (data.ok) document.getElementById('email-input').value = '';
+    } catch (err) {
+      status.textContent = 'Something went wrong. Try again.';
+    }
+  }
+</script>
+
+</body>
+</html>

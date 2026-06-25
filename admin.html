@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undercurrent — Review Queue</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500&family=Montserrat:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0A0A0A; --black-warm: #161310; --card: #1C1812;
+    --cream: #F5F1E8; --cream-dim: #C9C2B0; --gold: #C9A961;
+    --gold-dim: #8A7548; --grey: #6B6557; --line: #2A251D;
+    --green: #7A9B6E; --red: #B5654F;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--black); color: var(--cream);
+    font-family: 'Montserrat', sans-serif; font-weight: 300;
+    padding: 2.5rem 4vw 6rem;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  h1, h2 { font-family: 'Playfair Display', serif; font-weight: 600; }
+  header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--line); padding-bottom: 1.5rem; margin-bottom: 2.5rem;
+  }
+  .logo { font-style: italic; font-size: 1.4rem; }
+  .logo span { color: var(--gold); }
+  .stat-bar { display: flex; gap: 2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--grey); }
+  .stat-bar strong { color: var(--cream); }
+
+  section { margin-bottom: 3.5rem; }
+  .section-title {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.8rem;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    padding: 1.8rem 2rem; margin-bottom: 1rem;
+  }
+  .card.rejected { opacity: 0.5; }
+
+  .card-top { display: flex; justify-content: space-between; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .card-title { font-size: 1.25rem; font-family: 'Playfair Display', serif; font-style: italic; }
+  .card-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--grey); margin-top: 0.3rem; }
+
+  .verdict-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.3rem 0.7rem; border-radius: 2px; white-space: nowrap; height: fit-content;
+  }
+  .verdict-worth_it { background: rgba(122,155,110,0.15); color: var(--green); border: 1px solid var(--green); }
+  .verdict-skip { background: rgba(181,101,79,0.15); color: var(--red); border: 1px solid var(--red); }
+  .verdict-needs_review { background: rgba(201,169,97,0.15); color: var(--gold); border: 1px solid var(--gold); }
+
+  .raw-desc {
+    font-size: 0.82rem; color: var(--grey); margin-bottom: 1rem;
+    padding-left: 1rem; border-left: 2px solid var(--line); line-height: 1.6;
+  }
+
+  .ai-block { margin-bottom: 1.2rem; }
+  .ai-label { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--gold-dim); letter-spacing: 0.08em; margin-bottom: 0.4rem; display: block; }
+  .ai-summary-text {
+    width: 100%; background: var(--black-warm); border: 1px solid var(--line);
+    color: var(--cream); font-family: 'Montserrat', sans-serif; font-size: 0.92rem;
+    line-height: 1.6; padding: 0.9rem; min-height: 70px; resize: vertical;
+  }
+  .ai-reasoning { font-size: 0.8rem; color: var(--grey); font-style: italic; }
+
+  .actions { display: flex; gap: 0.7rem; margin-top: 1.2rem; flex-wrap: wrap; }
+  button, .btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.65rem 1.2rem; border: 1px solid var(--line);
+    background: transparent; color: var(--cream-dim); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-approve { border-color: var(--green); color: var(--green); }
+  .btn-approve:hover { background: var(--green); color: var(--black); }
+  .btn-reject { border-color: var(--red); color: var(--red); }
+  .btn-reject:hover { background: var(--red); color: var(--black); }
+  .btn-save { border-color: var(--gold-dim); color: var(--gold); }
+  .btn-save:hover { background: var(--gold); color: var(--black); }
+
+  .empty { color: var(--grey); font-size: 0.9rem; padding: 1.5rem 0; }
+  form { display: inline; }
+  .edit-form { display: block; margin-bottom: 0.8rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Under<span>current</span> <span style="color:var(--grey); font-style:normal; font-size:0.85rem;">/ review queue</span></div>
+  <div class="stat-bar">
+    <span><strong>{{ pending|length }}</strong> pending</span>
+    <span><strong>{{ approved|length }}</strong> live</span>
+    <span><strong>{{ rejected|length }}</strong> rejected</span>
+  </div>
+</header>
+
+<section>
+  <div class="section-title">Pending review</div>
+  {% if pending|length == 0 %}
+    <p class="empty">Nothing waiting. Run the scraper and AI review to pull in new events.</p>
+  {% endif %}
+
+  {% for ev in pending %}
+  <div class="card">
+    <div class="card-top">
+      <div>
+        <div class="card-title">{{ ev.title }}</div>
+        <div class="card-meta">{{ ev.venue }} — {{ ev.city }} · {{ ev.event_date }} · source: {{ ev.source }}</div>
+        <div class="card-meta">Lineup: {{ ev.lineup|join(', ') if ev.lineup else 'Not listed' }}</div>
+      </div>
+      {% if ev.ai_verdict %}
+      <span class="verdict-badge verdict-{{ ev.ai_verdict }}">{{ ev.ai_verdict.replace('_', ' ') }}</span>
+      {% else %}
+      <span class="verdict-badge mono" style="color:var(--grey); border:1px solid var(--line);">awaiting AI review</span>
+      {% endif %}
+    </div>
+
+    <div class="raw-desc">{{ ev.raw_description }}</div>
+
+    {% if ev.ai_summary %}
+    <form class="edit-form" action="/admin/event/{{ ev.id }}/edit" method="POST">
+      <div class="ai-block">
+        <span class="ai-label">Editorial summary (editable before publishing)</span>
+        <textarea class="ai-summary-text" name="ai_summary">{{ ev.ai_summary }}</textarea>
+      </div>
+      {% if ev.ai_reasoning %}
+      <div class="ai-reasoning">AI reasoning: {{ ev.ai_reasoning }}</div>
+      {% endif %}
+      <div class="actions">
+        <button type="submit" class="btn-save">Save edit</button>
+      </div>
+    </form>
+    {% else %}
+    <p class="empty" style="padding: 0.5rem 0;">Run <code class="mono">python ai_review.py</code> to generate a summary for this event.</p>
+    {% endif %}
+
+    <div class="actions">
+      <form action="/admin/event/{{ ev.id }}/approve" method="POST">
+        <button type="submit" class="btn-approve">✓ Approve & publish</button>
+      </form>
+      <form action="/admin/event/{{ ev.id }}/reject" method="POST">
+        <button type="submit" class="btn-reject">✕ Reject</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+<section>
+  <div class="section-title">Live on the site</div>
+  {% if approved|length == 0 %}
+    <p class="empty">Nothing published yet.</p>
+  {% endif %}
+  {% for ev in approved %}
+  <div class="card" style="opacity: 0.75;">
+    <div class="card-top">
+      <div>
+        <div class="card-title">{{ ev.title }}</div>
+        <div class="card-meta">{{ ev.venue }} — {{ ev.city }} · {{ ev.event_date }}</div>
+      </div>
+      <span class="verdict-badge verdict-worth_it">live</span>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+</body>
+</html>
